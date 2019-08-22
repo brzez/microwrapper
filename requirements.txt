@@ -1,1 +1,1 @@
-mpy-cross==1.10
+mpy-cross==1.11
