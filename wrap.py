@@ -1,6 +1,7 @@
 import uasyncio as asyncio
 
 device_name = None
+wifi_connection = None
 
 
 def _prefix_topic(topic, prefix=True):
@@ -9,7 +10,7 @@ def _prefix_topic(topic, prefix=True):
     return topic
 
 
-def do_connect(ssid, password, tries=60):
+def do_connect(ssid, password, tries=10):
     import network
     import time
     sta_if = network.WLAN(network.STA_IF)
@@ -21,18 +22,17 @@ def do_connect(ssid, password, tries=60):
             tries -= 1
             time.sleep(1)
             if tries == 0:
-                return False
-    print('network config:', sta_if.ifconfig())
-    return True
+                return None
+    return sta_if.ifconfig()
 
 
 def ensure_wifi(config):
-    connected = False
-    if not connected and 'wifi_1' in config:
-        connected = do_connect(**config.get('wifi_1'))
-    if not connected and 'wifi_2' in config:
-        connected = do_connect(**config.get('wifi_2'))
-    return connected
+    global wifi_connection
+    wifi_connection = False
+    if not wifi_connection and 'wifi_1' in config:
+        wifi_connection = do_connect(**config.get('wifi_1'))
+    if not wifi_connection and 'wifi_2' in config:
+        wifi_connection = do_connect(**config.get('wifi_2'))
 
 
 def get_device_id():
@@ -48,7 +48,6 @@ mqtt_client = None
 
 def sub_cb(topic, msg):
     for sub_topic, f, prefix in subscribes:
-        print('-message', topic, msg)
         if topic == _prefix_topic(sub_topic, prefix):
             f(msg)
 
@@ -120,12 +119,17 @@ async def mqtt_tick(config):
         await asyncio.sleep_ms(30)
 
 
+def get_heartbeat_message():
+    return dict(device_name=device_name, connection=wifi_connection)
+
+
 async def mqtt_heartbeat(config):
     if 'mqtt' not in config:
         return
 
+    import ujson
     while True:
-        publish(b'heartbeat', 'alive')
+        publish(b'heartbeat', ujson.dumps(get_heartbeat_message()).encode(), False)
         await asyncio.sleep(10)
 
 
@@ -142,7 +146,12 @@ async def tick(config):
         await asyncio.sleep(5)
 
 
-def wrap(fn, config):
+def wrap(fn, config_path):
+    import ujson
+
+    with open(config_path, 'r') as h:
+        config = ujson.load(h)
+
     boot(config)
     loop = asyncio.get_event_loop()
     loop.create_task(fn())

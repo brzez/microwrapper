@@ -8,7 +8,8 @@ OUT_DIR = './build'
 FILES = [
     ('main.py', 'main.py'),
     ('wrap.py', 'wrap.py'),
-    # ('umqttsimple.py', 'umqttsimple.py'),
+    ('umqttsimple.py', 'umqttsimple.py'),
+    ('config.json', 'config.json'),
 ]
 
 

@@ -1,0 +1,17 @@
+{
+  "wifi_1": {
+    "ssid": "",
+    "password": ""
+  },
+  "wifi_2": {
+    "ssid": "",
+    "password": ""
+  },
+  "mqtt": {
+    "server":"",
+    "kwargs": {
+      "user": "",
+      "password": ""
+    }
+  }
+}
