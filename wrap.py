@@ -120,7 +120,9 @@ async def mqtt_tick(config):
 
 
 def get_heartbeat_message():
-    return dict(device_name=device_name, connection=wifi_connection)
+    import gc
+    gc.collect()
+    return dict(device_name=device_name, connection=wifi_connection, mem=gc.mem_free())
 
 
 async def mqtt_heartbeat(config):
