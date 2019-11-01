@@ -108,7 +108,7 @@ async def mqtt_tick(config):
     while True:
         try:
             if mqtt_client:
-                print('- checking messages')
+                # print('- checking messages')
                 mqtt_client.check_msg()
             else:
                 print('mqtt connect')
